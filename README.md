@@ -1,92 +1,101 @@
-Order-to-Audit System
+# 🏭 Order-to-Audit Manufacturing Management System
 
-A Flask and SQLite-based order, production, inventory, GST billing, payment, and audit management system for a small snack manufacturing business.
+### An Integrated Order, Inventory, Production & Accounting Management System
 
-1. Project Overview
+A web-based manufacturing management application developed using **Python Flask and SQLite** to manage the complete business workflow of a small-scale snack manufacturing company.
 
-The system connects the complete business workflow:
+The system connects sales, order processing, production, inventory, GST billing, payments and audit tracking in one platform.
 
+---
 
+## 📸 Application Screenshots
 
+### Login
+![Login](screenshots/login.png)
 
+### Dashboard
+![Dashboard](screenshots/dashboard.png)
 
-Create products, customers, raw materials, and Bills of Materials.
+### Order Management
+![Orders](screenshots/orders.png)
 
+### Production Management
+![Production](screenshots/production.png)
 
+### Inventory Management
+![Inventory](screenshots/inventory.png)
 
-Salesmen submit customer orders.
+### GST Invoice
+![Invoice](screenshots/invoice.png)
 
+### Reports
+![Reports](screenshots/reports.png)
 
+---
 
-Admin approves or rejects orders after checking finished stock.
+## ✨ Key Features
 
+- **Role-Based Access:** Separate access for Owner, Admin, Production, Accountant and Salesman.
+- **Order Management:** Create, review, approve and track customer orders.
+- **Product & Customer Masters:** Manage products, customers, raw materials and Bills of Materials.
+- **GST Billing:** Generate invoices with applicable CGST, SGST or IGST.
+- **Production Management:** Record production output, material consumption and production expenses.
+- **Inventory Management:** Track raw materials and finished goods through stock movements.
+- **Purchase Management:** Record raw material purchases and purchase receipts.
+- **Payment Tracking:** Record customer payments and outstanding balances.
+- **Audit Trail:** Maintain records of important system changes.
+- **Reports:** View sales, purchases, GST, stock, production variance and outstanding reports.
+- **Export Options:** Export supported reports as PDF and CSV.
 
+---
 
-Approved orders are converted into GST invoices.
+## 👥 User Roles
 
+| Role | Main Responsibilities |
+|---|---|
+| Owner | Overall business monitoring |
+| Admin | Masters, order approvals, invoices, purchases and payments |
+| Production | Production entries and inventory viewing |
+| Accountant | Payments, inventory and reports |
+| Salesman | Customer orders and order tracking |
 
+---
 
-Dispatch reduces finished-goods stock through the stock ledger.
+## 🔄 Business Workflow
 
+1. Admin maintains products, customers and raw materials.
+2. Salesman creates customer orders.
+3. Admin reviews and approves orders based on available stock.
+4. Approved orders are converted into GST invoices.
+5. Production records manufacturing output and material usage.
+6. Dispatch updates finished-goods stock.
+7. Accountant records customer payments.
+8. Reports and audit logs help monitor business activities.
 
+---
 
-Production consumes raw materials and records finished packets.
+## 🛠️ Technology Stack
 
+| Technology | Purpose |
+|---|---|
+| Python | Backend programming |
+| Flask | Web application framework |
+| SQLite | Database |
+| HTML5 | Page structure |
+| CSS3 | Styling |
+| JavaScript | Frontend interactions |
+| Bootstrap 5 | Responsive interface |
+| Jinja2 | Template rendering |
+| ReportLab | PDF generation |
+| Werkzeug | Password hashing |
 
+---
 
-Payments update customer outstanding balances.
+## 📂 Project Structure
 
-
-
-Reports provide sales, GST, purchase, stock, production, and outstanding information.
-
-
-
-2. Technology Stack
-
-
-
-
-
-Python
-
-
-
-Flask
-
-
-
-SQLite
-
-
-
-HTML, CSS, JavaScript
-
-
-
-Bootstrap 5
-
-
-
-Jinja2
-
-
-
-ReportLab for PDF invoices and PDF reports
-
-
-
-CSV for report exports
-
-
-
-Werkzeug password hashing
-
-
-
-3. Project Structure
-
+```text
 order-to-audit/
+│
 ├── app.py
 ├── logic.py
 ├── schema.sql
@@ -97,837 +106,152 @@ order-to-audit/
 ├── docker-compose.yml
 ├── README.md
 ├── DESIGN.md
+│
 ├── static/
 │   └── style.css
-└── templates/
-    ├── base.html
-    ├── login.html
-    ├── dashboard.html
-    ├── order_new.html
-    ├── orders.html
-    ├── invoice.html
-    ├── credit_notes.html
-    ├── production.html
-    ├── inventory.html
-    ├── purchases.html
-    ├── purchase_new.html
-    ├── purchase_detail.html
-    ├── masters.html
-    ├── payments.html
-    └── reports.html
+│
+├── templates/
+│   ├── base.html
+│   ├── login.html
+│   ├── dashboard.html
+│   ├── orders.html
+│   ├── order_new.html
+│   ├── invoice.html
+│   ├── production.html
+│   ├── inventory.html
+│   ├── masters.html
+│   ├── payments.html
+│   └── reports.html
+│
+└── screenshots/
+```
 
+---
 
+## 🚀 Installation & Setup
 
-4. User Roles
+### Prerequisites
 
+- Python 3.10 or above
+- Git
+- Visual Studio Code (recommended)
 
+### 1. Clone the repository
 
+```bash
+git clone https://github.com/Mithra-ramesh-12/order-to-audit.git
+```
 
+### 2. Open the project folder
 
+```bash
+cd order-to-audit
+```
 
+### 3. Create a virtual environment
 
-Role
+```bash
+python -m venv venv
+```
 
+### 4. Activate the virtual environment
 
+Windows PowerShell:
 
-Main permissions
+```powershell
+.\venv\Scripts\Activate.ps1
+```
 
+### 5. Install dependencies
 
+```bash
+pip install -r requirements.txt
+```
 
+### 6. Initialize sample data
 
-
-Salesman
-
-
-
-Create and view own orders
-
-
-
-
-
-Admin
-
-
-
-Masters, approvals, invoices, dispatch, purchases, payments
-
-
-
-
-
-Production
-
-
-
-Record production runs and view inventory
-
-
-
-
-
-Accountant
-
-
-
-View inventory, payments, and reports
-
-
-
-
-
-Owner
-
-
-
-Overall dashboard and business access
-
-
-
-5. Business Rules
-
-
-
-Inventory
-
-Stock is calculated from the stock_ledger table. The system records every stock movement instead of directly overwriting a stock balance.
-
-Stock movement types include:
-
-
-
-
-
-Opening stock
-
-
-
-Purchase receipt
-
-
-
-Production material issue
-
-
-
-Production output
-
-
-
-Dispatch
-
-
-
-Adjustment
-
-
-
-Credit note
-
-
-
-Units
-
-Supported units:
-
-
-
-
-
-Kilogram (kg)
-
-
-
-Gram (g)
-
-
-
-Litre
-
-
-
-Piece
-
-
-
-Packet
-
-
-
-Carton
-
-One carton contains 20 packets.
-
-GST
-
-The factory is based in Tamil Nadu.
-
-
-
-
-
-Tamil Nadu customer: CGST + SGST
-
-
-
-Other-state customer: IGST
-
-Invoice values are stored in integer paise to avoid floating-point money errors.
-
-Invoices
-
-Invoice numbers follow the financial-year format:
-
-2026-27/0001
-
-Posted invoices must not be deleted. Corrections and cancellations must be handled through credit notes.
-
-Production
-
-Each production run records:
-
-
-
-
-
-Planned output
-
-
-
-Actual good packets
-
-
-
-Material consumption
-
-
-
-Damaged pouches
-
-
-
-Cartons used
-
-
-
-Labour cost
-
-
-
-Power and gas cost
-
-A variance above 3% should be investigated.
-
-6. Benchmark Scenario
-
-The project uses the following sample business data.
-
-Product
-
-
-
-
-
-
-
-Field
-
-
-
-Value
-
-
-
-
-
-Product
-
-
-
-Murukku 200g
-
-
-
-
-
-Selling price
-
-
-
-₹50 per packet
-
-
-
-
-
-GST
-
-
-
-5%
-
-
-
-
-
-Batch size
-
-
-
-200 packets
-
-
-
-
-
-Expected yield
-
-
-
-200 packets
-
-
-
-Bill of Materials
-
-
-
-
-
-
-
-Material
-
-
-
-Planned quantity
-
-
-
-
-
-Flour
-
-
-
-40 kg
-
-
-
-
-
-Oil
-
-
-
-10 litres
-
-
-
-
-
-Spice mix
-
-
-
-1.2 kg
-
-
-
-
-
-Pouch
-
-
-
-200 pieces
-
-
-
-
-
-Carton
-
-
-
-10 cartons
-
-
-
-Opening stock
-
-
-
-
-
-
-
-Material
-
-
-
-Quantity
-
-
-
-
-
-Flour
-
-
-
-100 kg
-
-
-
-
-
-Oil
-
-
-
-30 litres
-
-
-
-
-
-Spice mix
-
-
-
-5 kg
-
-
-
-
-
-Pouches
-
-
-
-500 pieces
-
-
-
-
-
-Cartons
-
-
-
-30 cartons
-
-
-
-
-
-Finished goods
-
-
-
-50 packets
-
-
-
-Benchmark purchase
-
-
-
-
-
-Flour purchased: 60 kg
-
-
-
-Purchase rate: ₹45 per kg
-
-
-
-Benchmark production
-
-
-
-
-
-Flour consumed: 40 kg
-
-
-
-Oil consumed: 10.5 litres
-
-
-
-Spice mix consumed: 1.2 kg
-
-
-
-Good output: 188 packets
-
-
-
-Damaged pouches: 6
-
-
-
-Cartons used: 9
-
-
-
-Labour cost: ₹1,200
-
-
-
-Power and gas cost: ₹600
-
-
-
-Benchmark sales
-
-
-
-
-
-Retailer A: 150 packets
-
-
-
-Distributor B: 120 packets
-
-
-
-Retailer A payment: ₹4,000
-
-The system should identify stock shortage when the second order is checked after the first dispatch.
-
-7. Database
-
-The SQLite database uses the tables defined in schema.sql.
-
-Important tables include:
-
-
-
-
-
-users
-
-
-
-customers
-
-
-
-materials
-
-
-
-products
-
-
-
-bom
-
-
-
-bom_lines
-
-
-
-orders
-
-
-
-order_lines
-
-
-
-purchases
-
-
-
-purchase_lines
-
-
-
-production_runs
-
-
-
-production_materials
-
-
-
-stock_ledger
-
-
-
-invoices
-
-
-
-invoice_lines
-
-
-
-credit_notes
-
-
-
-dispatches
-
-
-
-payments
-
-
-
-production_expenses
-
-
-
-audit_log
-
-
-
-8. Audit Trail
-
-Important changes are recorded in audit_log.
-
-Audit records capture:
-
-
-
-
-
-Table name
-
-
-
-Record ID
-
-
-
-Action
-
-
-
-Previous values
-
-
-
-Updated values
-
-
-
-User ID
-
-
-
-Action timestamp
-
-
-
-9. Reports
-
-The reports section is designed to cover:
-
-
-
-
-
-Sales register
-
-
-
-Customer and product sales
-
-
-
-GST summary
-
-
-
-Purchase register
-
-
-
-Stock summary
-
-
-
-Stock movement ledger
-
-
-
-Production variance
-
-
-
-Outstanding balances and invoice ageing buckets
-
-
-
-Material-wise production usage variance
-
-
-
-Current raw-material and finished-goods stock summaries
-
-
-
-GST rate and place-of-supply summary in a GSTR-style layout
-
-Supported report categories can be exported as CSV or PDF.
-
-10. Initial Setup and Demo Accounts
-
-The application and seed script use the same database file: order_to_audit.db.
-The Flask application creates the schema automatically if the database is missing or empty.
-Run the seed script once to add demo users and benchmark master/opening/purchase data:
-
+```bash
 python seed.py
+```
 
-Then start the application:
+Run this once for the initial demo database.
 
+### 7. Start the application
+
+```bash
 python app.py
+```
 
-Open http://127.0.0.1:5000 in your browser.
+### 8. Open in your browser
 
-Demo accounts:
+```text
+http://127.0.0.1:5000
+```
 
+---
 
+## 🔐 Demo Login Credentials
 
+| Role | Username | Password |
+|---|---|---|
+| Owner | owner | owner123 |
+| Admin | admin | admin123 |
+| Production | production | prod123 |
+| Accountant | accountant | account123 |
+| Salesman A | salesa | sales123 |
+| Salesman B | salesb | sales123 |
 
+**Note:** These are demonstration credentials only. Change them before any real deployment.
 
+---
 
+## 📊 Sample Business Scenario
 
-Role
+The application includes a sample Murukku 200g manufacturing scenario.
 
+| Parameter | Sample Value |
+|---|---:|
+| Product | Murukku 200g |
+| Selling Price | ₹50 per packet |
+| GST Rate | 5% |
+| Planned Production | 200 packets |
+| Actual Good Production | 188 packets |
+| Retailer A Order | 150 packets |
+| Retailer A Payment | ₹4,000 |
 
+The sample scenario demonstrates order processing, stock movements, production variance, GST billing and customer outstanding tracking.
 
-Username
+---
 
+## 🔒 Security & Data Management
 
+- Passwords are stored using password hashing.
+- Application routes use authentication and role checks.
+- SQLite foreign-key constraints are enabled.
+- Important business changes are recorded in the audit log.
+- Database files and environment secrets should not be committed to GitHub.
+- A production deployment requires a secure secret key and appropriate access controls.
 
-Password
+---
 
+## 🎯 Project Objective
 
+The main objective of this project is to demonstrate how a manufacturing business can manage its day-to-day operations through an integrated digital system instead of maintaining disconnected manual records.
 
+It aims to improve operational visibility, inventory tracking, production monitoring, billing accuracy and accountability.
 
+---
 
-Owner
+## ⚠️ Project Disclaimer
 
+This is an internship prototype intended for demonstration and educational purposes. Before using it for actual business accounting or statutory GST filing, calculations, tax treatment, reports and audit controls must be validated by qualified professionals.
 
+---
 
-owner
+## 👩‍💻 Repository
 
+**GitHub:** https://github.com/Mithra-ramesh-12/order-to-audit
 
+**Project:** Order-to-Audit Manufacturing Management System
 
-owner123
-
-
-
-
-
-Admin
-
-
-
-admin
-
-
-
-admin123
-
-
-
-
-
-Production
-
-
-
-production
-
-
-
-prod123
-
-
-
-
-
-Accountant
-
-
-
-accountant
-
-
-
-account123
-
-
-
-
-
-Salesman A
-
-
-
-salesa
-
-
-
-sales123
-
-
-
-
-
-Salesman B
-
-
-
-salesb
-
-
-
-sales123
-
-The seed script is designed to avoid duplicating the benchmark opening stock and purchase when run again.
-
-11. Security Notes
-
-
-
-
-
-Passwords are stored as hashes.
-
-
-
-Routes are protected by login and role checks.
-
-
-
-Database foreign-key constraints are enabled.
-
-
-
-A production deployment must use a strong secret key.
-
-
-
-Debug mode should be disabled in production.
-
-
-
-Demo passwords must be changed before real use.
-
-
-
-12. Project Status
-
-This is an internship prototype intended to demonstrate an integrated order-to-audit workflow. Before using it for real business accounting or statutory GST filing, validate all calculations, reports, invoice formats, tax treatment, and audit controls with a qualified accountant.
+**Status:** Internship Prototype
