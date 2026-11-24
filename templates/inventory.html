@@ -1,0 +1,118 @@
+
+{% extends "base.html" %}
+
+{% block title %}Inventory | Order-to-Audit{% endblock %}
+{% block heading %}Inventory Management{% endblock %}
+{% block subtitle %}Monitor raw material and finished goods stock movements{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0">Raw Material Stock</h5>
+        <small class="text-muted">Balances are calculated from the stock ledger.</small>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Material</th>
+                        <th>Unit</th>
+                        <th class="text-end">Available Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for item in material_stock %}
+                    <tr>
+                        <td class="fw-semibold">{{ item.name }}</td>
+                        <td>{{ item.unit }}</td>
+                        <td class="text-end fw-semibold">
+                            {{ item.balance }} {{ item.unit }}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="3" class="text-center text-muted">No raw materials found.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0">Finished Goods Stock</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Unit</th>
+                        <th class="text-end">Available Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for item in product_stock %}
+                    <tr>
+                        <td class="fw-semibold">{{ item.name }}</td>
+                        <td>{{ item.unit }}</td>
+                        <td class="text-end fw-semibold">
+                            {{ item.balance }} {{ item.unit }}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="3" class="text-center text-muted">No finished goods found.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0">Recent Stock Ledger</h5>
+        <small class="text-muted">Latest 100 stock movements</small>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Item</th>
+                        <th>Type</th>
+                        <th>Source</th>
+                        <th class="text-end">Stock In</th>
+                        <th class="text-end">Stock Out</th>
+                        <th>User</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for entry in ledger %}
+                    <tr>
+                        <td>{{ entry.movement_date }}</td>
+                        <td class="fw-semibold">{{ entry.item_name }}</td>
+                        <td>{{ entry.item_type|title }}</td>
+                        <td>{{ entry.source_type|replace('_', ' ')|title }}</td>
+                        <td class="text-end text-success">{{ entry.quantity_in }}</td>
+                        <td class="text-end text-danger">{{ entry.quantity_out }}</td>
+                        <td>{{ entry.user_name or '-' }}</td>
+                        <td>{{ entry.notes or '-' }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">
+                            No stock movements recorded yet.
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

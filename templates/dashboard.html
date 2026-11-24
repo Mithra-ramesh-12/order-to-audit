@@ -1,0 +1,566 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ current_role|title }} Dashboard | Order-to-Audit{% endblock %}
+{% block heading %}{{ current_role|title }} Dashboard{% endblock %}
+{% block subtitle %}Your personalized business workspace.{% endblock %}
+
+{% block content %}
+
+<div class="welcome-banner">
+    <div>
+        <span class="eyebrow-light">ORDER-TO-AUDIT WORKSPACE</span>
+        <h2>Welcome back, {{ current_user }}!</h2>
+
+        {% if current_role == 'salesman' %}
+            <p>Manage your customer orders and follow every order's progress.</p>
+        {% elif current_role == 'admin' %}
+            <p>Manage business operations, approvals, billing and inventory.</p>
+        {% elif current_role == 'production' %}
+            <p>Monitor manufacturing activity, material availability and output.</p>
+        {% elif current_role == 'accountant' %}
+            <p>Track invoices, collections, outstanding balances and financial records.</p>
+        {% elif current_role == 'owner' %}
+            <p>Your complete overview of business performance and operations.</p>
+        {% endif %}
+    </div>
+    <div class="welcome-icon">▥</div>
+</div>
+
+
+{% if current_role == 'salesman' %}
+
+<div class="section-heading">
+    <div>
+        <h3>My sales activity</h3>
+        <p>Your personal order performance</p>
+    </div>
+    <a href="{{ url_for('order_new') }}" class="btn btn-primary">+ Create new order</a>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon icon-purple">▤</div>
+        <div class="stat-label">My total orders</div>
+        <div class="stat-value">{{ dashboard_data.total_orders }}</div>
+        <div class="stat-foot">Orders created by you</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon icon-orange">◷</div>
+        <div class="stat-label">Pending approval</div>
+        <div class="stat-value">{{ dashboard_data.pending_orders }}</div>
+        <div class="stat-foot">Waiting for admin review</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon icon-green">✓</div>
+        <div class="stat-label">Approved / completed</div>
+        <div class="stat-value">{{ dashboard_data.approved_orders }}</div>
+        <div class="stat-foot">Approved, invoiced or dispatched</div>
+    </div>
+</div>
+
+<div class="section-heading mt-4">
+    <div>
+        <h3>My recent orders</h3>
+        <p>Track the status of your customer orders</p>
+    </div>
+    <a href="{{ url_for('orders') }}" class="btn btn-outline-dark">View all orders</a>
+</div>
+
+<div class="content-card">
+    {% if dashboard_data.recent_orders %}
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Order number</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in dashboard_data.recent_orders %}
+                <tr>
+                    <td class="fw-semibold">{{ order.order_number }}</td>
+                    <td>{{ order.customer_name }}</td>
+                    <td>{{ order.order_date }}</td>
+                    <td>
+                        <span class="status-pill status-{{ order.status }}">
+                            {{ order.status|title }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h5>No orders created yet</h5>
+        <p>Create your first customer order to get started.</p>
+        <a href="{{ url_for('order_new') }}" class="btn btn-primary">Create order</a>
+    </div>
+    {% endif %}
+</div>
+
+
+{% elif current_role == 'admin' %}
+
+<div class="section-heading">
+    <div>
+        <h3>Business control centre</h3>
+        <p>Daily sales, approvals and business records</p>
+    </div>
+    <a href="{{ url_for('orders') }}" class="btn btn-primary">Review orders</a>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon icon-orange">◷</div>
+        <div class="stat-label">Pending approvals</div>
+        <div class="stat-value">{{ dashboard_data.pending_orders }}</div>
+        <div class="stat-foot">Orders waiting for review</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon icon-green">₹</div>
+        <div class="stat-label">Today's sales</div>
+        <div class="stat-value">{{ money_text(dashboard_data.today_sales) }}</div>
+        <div class="stat-foot">Posted invoices today</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon icon-blue">◈</div>
+        <div class="stat-label">Outstanding</div>
+        <div class="stat-value">{{ money_text(dashboard_data.outstanding) }}</div>
+        <div class="stat-foot">Unpaid invoice balances</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon icon-purple">▣</div>
+        <div class="stat-label">Active products</div>
+        <div class="stat-value">{{ dashboard_data.products }}</div>
+        <div class="stat-foot">Products in the catalogue</div>
+    </div>
+</div>
+
+<div class="stats-grid stats-grid-secondary">
+    <div class="stat-card wide-stat">
+        <div class="stat-label">Registered customers</div>
+        <div class="stat-value">{{ dashboard_data.customers }}</div>
+        <div class="stat-foot">Active customer accounts</div>
+    </div>
+    <div class="stat-card wide-stat">
+        <div class="stat-label">Inventory management</div>
+        <div class="stat-value">Stock</div>
+        <div class="stat-foot"><a href="{{ url_for('inventory') }}">View inventory →</a></div>
+    </div>
+    <div class="stat-card wide-stat">
+        <div class="stat-label">Purchase management</div>
+        <div class="stat-value">Purchases</div>
+        <div class="stat-foot"><a href="{{ url_for('purchases') }}">Manage purchases →</a></div>
+    </div>
+</div>
+
+<div class="section-heading mt-4">
+    <div>
+        <h3>Finished product stock</h3>
+        <p>Current balance calculated from the stock ledger</p>
+    </div>
+    <a href="{{ url_for('inventory') }}" class="btn btn-outline-dark">Full inventory</a>
+</div>
+
+<div class="content-card">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr><th>Product</th><th>Available packets</th></tr>
+            </thead>
+            <tbody>
+                {% for item in dashboard_data.stock %}
+                <tr>
+                    <td class="fw-semibold">{{ item.name }}</td>
+                    <td>{{ "%.2f"|format(item.balance) }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="2">No products available.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="section-heading mt-4">
+    <div>
+        <h3>Recent orders</h3>
+        <p>Latest salesman activity</p>
+    </div>
+    <a href="{{ url_for('orders') }}" class="btn btn-outline-dark">All orders</a>
+</div>
+
+<div class="content-card">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr><th>Order</th><th>Customer</th><th>Salesman</th><th>Date</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                {% for order in dashboard_data.recent_orders %}
+                <tr>
+                    <td class="fw-semibold">{{ order.order_number }}</td>
+                    <td>{{ order.customer_name }}</td>
+                    <td>{{ order.salesman_name }}</td>
+                    <td>{{ order.order_date }}</td>
+                    <td><span class="status-pill status-{{ order.status }}">{{ order.status|title }}</span></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">No orders available.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+{% elif current_role == 'production' %}
+
+<div class="section-heading">
+    <div>
+        <h3>Production control centre</h3>
+        <p>Manufacturing output and material availability</p>
+    </div>
+    <a href="{{ url_for('production') }}" class="btn btn-primary">+ Record production</a>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon icon-orange">⚙</div>
+        <div class="stat-label">Today's production runs</div>
+        <div class="stat-value">{{ dashboard_data.today_runs }}</div>
+        <div class="stat-foot">Posted runs today</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon icon-green">▣</div>
+        <div class="stat-label">Today's good output</div>
+        <div class="stat-value">{{ dashboard_data.today_output }}</div>
+        <div class="stat-foot">Good packets produced</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon icon-blue">▤</div>
+        <div class="stat-label">Total completed runs</div>
+        <div class="stat-value">{{ dashboard_data.total_runs }}</div>
+        <div class="stat-foot">All posted production runs</div>
+    </div>
+</div>
+
+<div class="section-heading mt-4">
+    <div>
+        <h3>Available production recipes</h3>
+        <p>Active Bills of Materials</p>
+    </div>
+    <a href="{{ url_for('production') }}" class="btn btn-outline-dark">Open production</a>
+</div>
+
+<div class="content-card">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr><th>Product</th><th>Batch</th><th>Batch size</th><th>Expected yield</th></tr>
+            </thead>
+            <tbody>
+                {% for bom in dashboard_data.boms %}
+                <tr>
+                    <td class="fw-semibold">{{ bom.product_name }}</td>
+                    <td>{{ bom.batch_name }}</td>
+                    <td>{{ bom.batch_size_packets }} packets</td>
+                    <td>{{ bom.expected_yield_packets }} packets</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4">No active production recipes found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="section-heading mt-4">
+    <div>
+        <h3>Raw material availability</h3>
+        <p>Live balances from stock movements</p>
+    </div>
+    <a href="{{ url_for('inventory') }}" class="btn btn-outline-dark">View inventory</a>
+</div>
+
+<div class="content-card">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead><tr><th>Material</th><th>Available quantity</th><th>Unit</th></tr></thead>
+            <tbody>
+                {% for material in dashboard_data.materials %}
+                <tr>
+                    <td class="fw-semibold">{{ material.name }}</td>
+                    <td>{{ "%.3f"|format(material.balance) }}</td>
+                    <td>{{ material.unit }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3">No raw materials available.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="section-heading mt-4">
+    <div><h3>Recent production runs</h3><p>Latest manufacturing activity</p></div>
+</div>
+
+<div class="content-card">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead><tr><th>Run number</th><th>Product</th><th>Date</th><th>Planned</th><th>Good output</th><th>Status</th></tr></thead>
+            <tbody>
+                {% for run in dashboard_data.recent_runs %}
+                <tr>
+                    <td class="fw-semibold">{{ run.run_number }}</td>
+                    <td>{{ run.product_name }}</td>
+                    <td>{{ run.production_date }}</td>
+                    <td>{{ run.planned_packets }}</td>
+                    <td>{{ run.actual_good_packets }}</td>
+                    <td><span class="status-pill status-{{ run.status }}">{{ run.status|title }}</span></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6">No production runs recorded yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+{% elif current_role == 'accountant' %}
+
+<div class="section-heading">
+    <div>
+        <h3>Financial overview</h3>
+        <p>Invoice, collection and outstanding position</p>
+    </div>
+    <a href="{{ url_for('reports') }}" class="btn btn-primary">Open financial reports</a>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon icon-purple">▤</div>
+        <div class="stat-label">Posted invoices</div>
+        <div class="stat-value">{{ dashboard_data.invoice_count }}</div>
+        <div class="stat-foot">Active posted invoices</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon icon-green">₹</div>
+        <div class="stat-label">This month's sales</div>
+        <div class="stat-value">{{ money_text(dashboard_data.sales_total) }}</div>
+        <div class="stat-foot">Posted invoice totals</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon icon-blue">✓</div>
+        <div class="stat-label">This month's collections</div>
+        <div class="stat-value">{{ money_text(dashboard_data.paid_total) }}</div>
+        <div class="stat-foot">Payments received</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon icon-orange">◷</div>
+        <div class="stat-label">Total outstanding</div>
+        <div class="stat-value">{{ money_text(dashboard_data.outstanding) }}</div>
+        <div class="stat-foot">Unpaid invoice balances</div>
+    </div>
+</div>
+
+<div class="section-heading mt-4">
+    <div><h3>Recent invoices</h3><p>Latest posted customer invoices</p></div>
+    <a href="{{ url_for('payments') }}" class="btn btn-outline-dark">Manage payments</a>
+</div>
+
+<div class="content-card">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr><th>Invoice</th><th>Customer</th><th>Date</th><th>Taxable value</th><th>Total</th></tr>
+            </thead>
+            <tbody>
+                {% for invoice in dashboard_data.recent_invoices %}
+                <tr>
+                    <td class="fw-semibold">
+                        <a href="{{ url_for('invoice', invoice_id=invoice.id) }}">{{ invoice.invoice_number }}</a>
+                    </td>
+                    <td>{{ invoice.customer_name }}</td>
+                    <td>{{ invoice.invoice_date }}</td>
+                    <td>{{ money_text(invoice.taxable_value_paise) }}</td>
+                    <td class="fw-semibold">{{ money_text(invoice.total_paise) }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">No posted invoices yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="section-heading mt-4">
+    <div><h3>Recent collections</h3><p>Latest payments received from customers</p></div>
+</div>
+
+<div class="content-card">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead><tr><th>Date</th><th>Invoice</th><th>Customer</th><th>Mode</th><th>Amount</th></tr></thead>
+            <tbody>
+                {% for payment in dashboard_data.recent_payments %}
+                <tr>
+                    <td>{{ payment.payment_date }}</td>
+                    <td>{{ payment.invoice_number }}</td>
+                    <td>{{ payment.customer_name }}</td>
+                    <td>{{ payment.payment_mode }}</td>
+                    <td class="fw-semibold">{{ money_text(payment.amount_paise) }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">No payments recorded yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+{% elif current_role == 'owner' %}
+
+<div class="section-heading">
+    <div>
+        <h3>Executive business overview</h3>
+        <p>Your complete business performance at a glance</p>
+    </div>
+    <a href="{{ url_for('reports') }}" class="btn btn-primary">View business reports</a>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon icon-purple">▣</div>
+        <div class="stat-label">Active products</div>
+        <div class="stat-value">{{ dashboard_data.products }}</div>
+        <div class="stat-foot">Product catalogue</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon icon-orange">♙</div>
+        <div class="stat-label">Customers</div>
+        <div class="stat-value">{{ dashboard_data.customers }}</div>
+        <div class="stat-foot">Active customers</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon icon-green">♟</div>
+        <div class="stat-label">Active team members</div>
+        <div class="stat-value">{{ dashboard_data.employees }}</div>
+        <div class="stat-foot">Registered active users</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon icon-blue">◷</div>
+        <div class="stat-label">Pending orders</div>
+        <div class="stat-value">{{ dashboard_data.pending_orders }}</div>
+        <div class="stat-foot">Awaiting admin approval</div>
+    </div>
+</div>
+
+<div class="stats-grid stats-grid-secondary">
+    <div class="stat-card wide-stat">
+        <div class="stat-label">Today's sales</div>
+        <div class="stat-value">{{ money_text(dashboard_data.today_sales) }}</div>
+        <div class="stat-foot">Posted invoices today</div>
+    </div>
+
+    <div class="stat-card wide-stat">
+        <div class="stat-label">This month's sales</div>
+        <div class="stat-value">{{ money_text(dashboard_data.month_sales) }}</div>
+        <div class="stat-foot">Month-to-date invoice value</div>
+    </div>
+
+    <div class="stat-card wide-stat">
+        <div class="stat-label">Outstanding</div>
+        <div class="stat-value">{{ money_text(dashboard_data.outstanding) }}</div>
+        <div class="stat-foot">Unpaid invoice balances</div>
+    </div>
+
+    <div class="stat-card wide-stat">
+        <div class="stat-label">Completed production runs</div>
+        <div class="stat-value">{{ dashboard_data.production_runs }}</div>
+        <div class="stat-foot">Posted manufacturing runs</div>
+    </div>
+</div>
+
+<div class="section-heading mt-4">
+    <div><h3>Recent business orders</h3><p>Sales activity across your team</p></div>
+    <a href="{{ url_for('orders') }}" class="btn btn-outline-dark">View orders</a>
+</div>
+
+<div class="content-card">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr><th>Order</th><th>Customer</th><th>Salesman</th><th>Date</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                {% for order in dashboard_data.recent_orders %}
+                <tr>
+                    <td class="fw-semibold">{{ order.order_number }}</td>
+                    <td>{{ order.customer_name }}</td>
+                    <td>{{ order.salesman_name }}</td>
+                    <td>{{ order.order_date }}</td>
+                    <td><span class="status-pill status-{{ order.status }}">{{ order.status|title }}</span></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">No orders available.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="section-heading mt-4">
+    <div><h3>Recent production activity</h3><p>Latest completed manufacturing runs</p></div>
+    <a href="{{ url_for('production') }}" class="btn btn-outline-dark">Production records</a>
+</div>
+
+<div class="content-card">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead><tr><th>Run number</th><th>Product</th><th>Date</th><th>Good packets</th></tr></thead>
+            <tbody>
+                {% for run in dashboard_data.recent_runs %}
+                <tr>
+                    <td class="fw-semibold">{{ run.run_number }}</td>
+                    <td>{{ run.product_name }}</td>
+                    <td>{{ run.production_date }}</td>
+                    <td>{{ run.actual_good_packets }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4">No production activity recorded yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endif %}
+
+<div class="text-muted small mt-4">
+    Dashboard data updated for {{ today }}.
+</div>
+
+{% endblock %}

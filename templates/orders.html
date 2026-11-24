@@ -1,0 +1,107 @@
+
+{% extends "base.html" %}
+
+{% block title %}Orders | Order-to-Audit{% endblock %}
+{% block heading %}Sales Orders{% endblock %}
+{% block subtitle %}Manage customer orders and approval workflow{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h5 class="mb-1">Order Register</h5>
+        <p class="text-muted small mb-0">Track every order from entry to dispatch.</p>
+    </div>
+
+    {% if current_role in ['salesman', 'admin', 'owner'] %}
+    <a href="{{ url_for('order_new') }}" class="btn btn-dark">+ New Order</a>
+    {% endif %}
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Order Number</th>
+                        <th>Customer</th>
+                        <th>Salesman</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Invoice</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for order in orders %}
+                    <tr>
+                        <td class="fw-semibold">{{ order.order_number }}</td>
+                        <td>{{ order.customer_name }}</td>
+                        <td>{{ order.salesman_name }}</td>
+                        <td>{{ order.order_date }}</td>
+                        <td>
+                            {% if order.status == 'pending' %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% elif order.status == 'approved' %}
+                                <span class="badge bg-info text-dark">Approved</span>
+                            {% elif order.status == 'invoiced' %}
+                                <span class="badge bg-primary">Invoiced</span>
+                            {% elif order.status == 'dispatched' %}
+                                <span class="badge bg-success">Dispatched</span>
+                            {% elif order.status == 'rejected' %}
+                                <span class="badge bg-danger">Rejected</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ order.status|title }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if order.invoice_id %}
+                                <a href="{{ url_for('invoice', invoice_id=order.invoice_id) }}">
+                                    View Invoice
+                                </a>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% if current_role in ['admin', 'owner'] and order.status == 'pending' %}
+                                <form method="POST"
+                                      action="{{ url_for('approve_order', order_id=order.id) }}">
+                                    <button class="btn btn-sm btn-success" type="submit">
+                                        Approve
+                                    </button>
+                                </form>
+
+                                <form method="POST"
+                                      action="{{ url_for('reject_order', order_id=order.id) }}">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit">
+                                        Reject
+                                    </button>
+                                </form>
+                                {% endif %}
+
+                                {% if current_role in ['admin', 'owner'] and order.status == 'approved' and not order.invoice_id %}
+                                <form method="POST"
+                                      action="{{ url_for('create_invoice', order_id=order.id) }}">
+                                    <button class="btn btn-sm btn-dark" type="submit">
+                                        Create Invoice
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-5">
+                            No orders found. Create your first customer order.
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

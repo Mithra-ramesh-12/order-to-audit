@@ -1,0 +1,174 @@
+
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">Record Purchase</h2>
+            <p class="text-muted mb-0">Add raw materials purchased from a supplier.</p>
+        </div>
+        <a href="{{ url_for('purchases') }}" class="btn btn-outline-secondary">
+            Back to Purchases
+        </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <form method="POST" action="{{ url_for('purchase_new') }}">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Supplier Name</label>
+                        <input type="text" name="supplier_name"
+                               class="form-control" required
+                               placeholder="Enter supplier name">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Purchase Date</label>
+                        <input type="date" name="purchase_date"
+                               class="form-control" value="{{ today }}" required>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Reference Number</label>
+                        <input type="text" name="reference_number"
+                               class="form-control"
+                               placeholder="Optional">
+                    </div>
+                </div>
+
+                <h5 class="fw-bold mb-3">Material Details</h5>
+
+                <div class="table-responsive">
+                    <table class="table align-middle" id="purchaseTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="min-width:180px;">Material</th>
+                                <th>Quantity</th>
+                                <th>Unit</th>
+                                <th>Rate (₹)</th>
+                                <th>GST (%)</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="purchaseRows">
+                            <tr>
+                                <td>
+                                    <select name="material_id[]" class="form-select" required>
+                                        <option value="">Select material</option>
+                                        {% for material in materials %}
+                                            <option value="{{ material.id }}" data-unit="{{ material.unit }}">
+                                                {{ material.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" name="quantity[]"
+                                           class="form-control" min="0.001"
+                                           step="0.001" required>
+                                </td>
+                                <td>
+                                    <select name="unit[]" class="form-select">
+                                        <option value="kg">kg</option>
+                                        <option value="g">g</option>
+                                        <option value="litre">Litre</option>
+                                        <option value="piece">Piece</option>
+                                        <option value="packet">Packet</option>
+                                        <option value="carton">Carton</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" name="rate[]"
+                                           class="form-control" min="0"
+                                           step="0.01" required>
+                                </td>
+                                <td>
+                                    <input type="number" name="gst[]"
+                                           class="form-control" min="0"
+                                           max="100" step="0.01"
+                                           value="0">
+                                </td>
+                                <td>
+                                    <button type="button"
+                                            class="btn btn-outline-danger btn-sm"
+                                            onclick="removePurchaseRow(this)">
+                                        Remove
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <button type="button" class="btn btn-outline-primary mb-4"
+                        onclick="addPurchaseRow()">
+                    + Add Another Material
+                </button>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{{ url_for('purchases') }}"
+                       class="btn btn-light">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        Save Purchase
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('#purchaseRows select[name="material_id[]"]').forEach(function (select) {
+    select.addEventListener('change', function () {
+        const unit = this.selectedOptions[0]?.dataset.unit;
+        const rowUnit = this.closest('tr').querySelector('select[name="unit[]"]');
+        if (unit && rowUnit) rowUnit.value = unit;
+    });
+});
+
+function addPurchaseRow() {
+    const rows = document.getElementById("purchaseRows");
+    const firstRow = rows.querySelector("tr");
+    const newRow = firstRow.cloneNode(true);
+
+    newRow.querySelectorAll("input").forEach(input => {
+        if (input.name === "gst[]") {
+            input.value = "0";
+        } else {
+            input.value = "";
+        }
+    });
+
+    newRow.querySelectorAll("select").forEach(select => {
+        select.selectedIndex = 0;
+    });
+
+    rows.appendChild(newRow);
+    const materialSelect = newRow.querySelector('select[name="material_id[]"]');
+    materialSelect.addEventListener('change', function () {
+        const unit = this.selectedOptions[0]?.dataset.unit;
+        const rowUnit = this.closest('tr').querySelector('select[name="unit[]"]');
+        if (unit && rowUnit) rowUnit.value = unit;
+    });
+}
+
+function removePurchaseRow(button) {
+    const rows = document.querySelectorAll("#purchaseRows tr");
+
+    if (rows.length > 1) {
+        button.closest("tr").remove();
+    } else {
+        alert("At least one material row is required.");
+    }
+}
+</script>
+
+{% endblock %}

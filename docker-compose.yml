@@ -1,0 +1,13 @@
+
+services:
+  order-to-audit:
+    build: .
+    container_name: order-to-audit
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_PATH: /app/order_to_audit.db
+      FLASK_SECRET_KEY: change-this-before-deployment
+    volumes:
+      - ./order_to_audit.db:/app/order_to_audit.db
+    restart: unless-stopped

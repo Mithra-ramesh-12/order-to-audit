@@ -1,0 +1,316 @@
+
+{% extends "base.html" %}
+
+{% block title %}Reports | Order-to-Audit{% endblock %}
+{% block heading %}Business Reports{% endblock %}
+{% block subtitle %}Review sales, purchases, GST, production and customer balances{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('reports') }}" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">From Date</label>
+                <input type="date" class="form-control" name="from_date"
+                       value="{{ from_date }}" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">To Date</label>
+                <input type="date" class="form-control" name="to_date"
+                       value="{{ to_date }}" required>
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-dark w-100" type="submit">Apply Date Filter</button>
+            </div>
+        </form>
+
+        <div class="d-flex flex-wrap gap-2 mt-3">
+            <a class="btn btn-outline-success btn-sm"
+               href="{{ url_for('export_report', report_type='sales', from_date=from_date, to_date=to_date) }}">
+                Export Sales CSV
+            </a>
+            <a class="btn btn-outline-success btn-sm"
+               href="{{ url_for('export_report', report_type='purchases', from_date=from_date, to_date=to_date) }}">
+                Export Purchases CSV
+            </a>
+            <a class="btn btn-outline-success btn-sm"
+               href="{{ url_for('export_report', report_type='production', from_date=from_date, to_date=to_date) }}">
+                Export Production CSV
+            </a>
+            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('export_report', report_type='sales', format='pdf', from_date=from_date, to_date=to_date) }}">Sales PDF</a>
+            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('export_report', report_type='purchases', format='pdf', from_date=from_date, to_date=to_date) }}">Purchases PDF</a>
+            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('export_report', report_type='production', format='pdf', from_date=from_date, to_date=to_date) }}">Production PDF</a>
+            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('export_report', report_type='stock', format='pdf', from_date=from_date, to_date=to_date) }}">Stock PDF</a>
+            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('export_report', report_type='payments', format='pdf', from_date=from_date, to_date=to_date) }}">Payments PDF</a>
+            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('export_report', report_type='gst', format='pdf', from_date=from_date, to_date=to_date) }}">GST PDF</a>
+            <a class="btn btn-outline-success btn-sm" href="{{ url_for('export_report', report_type='stock', from_date=from_date, to_date=to_date) }}">Stock Ledger CSV</a>
+            <a class="btn btn-outline-success btn-sm" href="{{ url_for('export_report', report_type='payments', from_date=from_date, to_date=to_date) }}">Payments CSV</a>
+            <a class="btn btn-outline-success btn-sm" href="{{ url_for('export_report', report_type='gst', from_date=from_date, to_date=to_date) }}">GST Summary CSV</a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3">
+            <small class="text-muted">Sales Total</small>
+            <h4>{{ money_text(sales_total) }}</h4>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3">
+            <small class="text-muted">Purchase Total</small>
+            <h4>{{ money_text(purchase_total) }}</h4>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3">
+            <small class="text-muted">Payments Received</small>
+            <h4 class="text-success">{{ money_text(payment_total) }}</h4>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3">
+            <small class="text-muted">Outstanding</small>
+            <h4 class="text-danger">{{ money_text(outstanding_total) }}</h4>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0">Sales Register</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Invoice</th>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th class="text-end">Taxable</th>
+                        <th class="text-end">CGST</th>
+                        <th class="text-end">SGST</th>
+                        <th class="text-end">IGST</th>
+                        <th class="text-end">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for row in sales_rows %}
+                    <tr>
+                        <td>{{ row.invoice_number }}</td>
+                        <td>{{ row.invoice_date }}</td>
+                        <td>{{ row.customer_name }}</td>
+                        <td class="text-end">{{ money_text(row.taxable_value_paise) }}</td>
+                        <td class="text-end">{{ money_text(row.cgst_paise) }}</td>
+                        <td class="text-end">{{ money_text(row.sgst_paise) }}</td>
+                        <td class="text-end">{{ money_text(row.igst_paise) }}</td>
+                        <td class="text-end fw-semibold">{{ money_text(row.total_paise) }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="8" class="text-center text-muted">No sales in this period.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0">GST Summary</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <small class="text-muted">Taxable Value</small>
+                <h5>{{ money_text(gst_summary.taxable) }}</h5>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted">CGST</small>
+                <h5>{{ money_text(gst_summary.cgst) }}</h5>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted">SGST</small>
+                <h5>{{ money_text(gst_summary.sgst) }}</h5>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted">IGST</small>
+                <h5>{{ money_text(gst_summary.igst) }}</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0">Purchase Register</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Material</th>
+                        <th>Quantity</th>
+                        <th class="text-end">Total Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for row in purchase_rows %}
+                    <tr>
+                        <td>{{ row.purchase_date }}</td>
+                        <td>{{ row.material_name }}</td>
+                        <td>{{ row.quantity }}</td>
+                        <td class="text-end">{{ money_text(row.total_amount_paise) }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4" class="text-center text-muted">No purchases in this period.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0">Production Variance Report</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Run</th>
+                        <th>Product</th>
+                        <th>Planned</th>
+                        <th>Actual Good Output</th>
+                        <th>Variance</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for row in production_rows %}
+                    <tr>
+                        <td>{{ row.run_number }}</td>
+                        <td>{{ row.product_name }}</td>
+                        <td>{{ row.planned_packets }}</td>
+                        <td>{{ row.actual_good_packets }}</td>
+                        <td>{{ row.variance_percent }}%</td>
+                        <td>
+                            {% if row.flagged %}
+                            <span class="badge bg-danger">Flagged</span>
+                            {% else %}
+                            <span class="badge bg-success">Within Tolerance</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" class="text-center text-muted">No production runs in this period.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0">Customer Outstanding Report</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th class="text-end">Total Invoiced</th>
+                        <th class="text-end">Received</th>
+                        <th class="text-end">Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for row in outstanding_rows %}
+                    <tr>
+                        <td>{{ row.customer_name }}</td>
+                        <td class="text-end">{{ money_text(row.total_paise) }}</td>
+                        <td class="text-end text-success">{{ money_text(row.received_paise) }}</td>
+                        <td class="text-end text-danger fw-semibold">{{ money_text(row.balance_paise) }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4" class="text-center text-muted">No outstanding balances.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3"><h5 class="mb-0">Customer-wise Sales</h5></div>
+            <div class="card-body table-responsive">
+                <table class="table table-sm table-hover"><thead><tr><th>Customer</th><th>Invoices</th><th class="text-end">Taxable</th><th class="text-end">Total</th></tr></thead><tbody>
+                {% for row in customer_sales_rows %}<tr><td>{{ row.customer_name }}</td><td>{{ row.invoice_count }}</td><td class="text-end">{{ money_text(row.taxable_paise) }}</td><td class="text-end">{{ money_text(row.total_paise) }}</td></tr>
+                {% else %}<tr><td colspan="4" class="text-center text-muted">No customer sales.</td></tr>{% endfor %}
+                </tbody></table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3"><h5 class="mb-0">Product-wise Sales</h5></div>
+            <div class="card-body table-responsive">
+                <table class="table table-sm table-hover"><thead><tr><th>Product</th><th>Packets</th><th class="text-end">Taxable</th></tr></thead><tbody>
+                {% for row in product_sales_rows %}<tr><td>{{ row.product_name }}</td><td>{{ row.quantity_packets }}</td><td class="text-end">{{ money_text(row.taxable_paise) }}</td></tr>
+                {% else %}<tr><td colspan="3" class="text-center text-muted">No product sales.</td></tr>{% endfor %}
+                </tbody></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mt-4">
+    <div class="card-header bg-white py-3"><h5 class="mb-0">GST Rate & Place-of-Supply Summary</h5><small class="text-muted">GSTR-style summary for the selected period</small></div>
+    <div class="card-body table-responsive">
+        <table class="table table-hover"><thead><tr><th>GST Rate</th><th>Place of Supply</th><th class="text-end">Taxable</th><th class="text-end">CGST</th><th class="text-end">SGST</th><th class="text-end">IGST</th></tr></thead><tbody>
+        {% for row in gst_rate_rows %}<tr><td>{{ (row.gst_rate_bps / 100)|round(2) }}%</td><td>{{ row.customer_state }}</td><td class="text-end">{{ money_text(row.taxable_paise) }}</td><td class="text-end">{{ money_text(row.cgst_paise) }}</td><td class="text-end">{{ money_text(row.sgst_paise) }}</td><td class="text-end">{{ money_text(row.igst_paise) }}</td></tr>
+        {% else %}<tr><td colspan="6" class="text-center text-muted">No GST transactions.</td></tr>{% endfor %}
+        </tbody></table>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mt-4">
+    <div class="card-header bg-white py-3"><h5 class="mb-0">Material Usage Variance</h5></div>
+    <div class="card-body table-responsive">
+        <table class="table table-hover"><thead><tr><th>Run</th><th>Product</th><th>Material</th><th>Planned</th><th>Actual</th><th>Variance</th><th>Status</th></tr></thead><tbody>
+        {% for row in material_variance_rows %}
+            {% set planned = row.planned_quantity|float %}{% set actual = row.actual_quantity|float %}
+            {% set variance = ((actual-planned)*100/planned) if planned else 0 %}
+            <tr><td>{{ row.run_number }}</td><td>{{ row.product_name }}</td><td>{{ row.material_name }}</td><td>{{ row.planned_quantity }} {{ row.unit }}</td><td>{{ row.actual_quantity }} {{ row.unit }}</td><td>{{ '%.2f'|format(variance) }}%</td><td>{% if variance|abs > 3 %}<span class="badge bg-danger">Flagged</span>{% else %}<span class="badge bg-success">Within tolerance</span>{% endif %}</td></tr>
+        {% else %}<tr><td colspan="7" class="text-center text-muted">No material usage records.</td></tr>{% endfor %}
+        </tbody></table>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100"><div class="card-header bg-white py-3"><h5 class="mb-0">Current Material Stock</h5></div><div class="card-body table-responsive"><table class="table table-sm"><thead><tr><th>Material</th><th>Unit</th><th class="text-end">Balance</th></tr></thead><tbody>{% for item in material_stock %}<tr><td>{{ item.name }}</td><td>{{ item.unit }}</td><td class="text-end">{{ item.balance }}</td></tr>{% else %}<tr><td colspan="3">No materials.</td></tr>{% endfor %}</tbody></table></div></div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100"><div class="card-header bg-white py-3"><h5 class="mb-0">Current Finished Goods Stock</h5></div><div class="card-body table-responsive"><table class="table table-sm"><thead><tr><th>Product</th><th>Unit</th><th class="text-end">Balance</th></tr></thead><tbody>{% for item in product_stock %}<tr><td>{{ item.name }}</td><td>{{ item.unit }}</td><td class="text-end">{{ item.balance }}</td></tr>{% else %}<tr><td colspan="3">No products.</td></tr>{% endfor %}</tbody></table></div></div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mt-4">
+    <div class="card-header bg-white py-3"><h5 class="mb-0">Outstanding Ageing</h5><small class="text-muted">Age calculated from invoice date to today</small></div>
+    <div class="card-body table-responsive"><table class="table table-hover"><thead><tr><th>Invoice</th><th>Customer</th><th>Date</th><th>Age</th><th>Bucket</th><th class="text-end">Balance</th></tr></thead><tbody>
+    {% for row in ageing_rows %}<tr><td>{{ row.invoice_number }}</td><td>{{ row.customer_name }}</td><td>{{ row.invoice_date }}</td><td>{{ row.age_days }} days</td><td>{{ row.age_bucket }}</td><td class="text-end text-danger">{{ money_text(row.balance_paise) }}</td></tr>{% else %}<tr><td colspan="6" class="text-center text-muted">No outstanding invoices.</td></tr>{% endfor %}
+    </tbody></table></div>
+</div>
+
+{% endblock %}

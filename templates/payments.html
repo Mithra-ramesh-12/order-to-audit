@@ -1,0 +1,193 @@
+
+{% extends "base.html" %}
+
+{% block title %}Payments | Order-to-Audit{% endblock %}
+{% block heading %}Payments & Outstanding{% endblock %}
+{% block subtitle %}Record customer payments and monitor pending balances{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3">
+            <small class="text-muted">Total Invoiced</small>
+            <h3 class="mb-0">{{ money_text(total_invoiced) }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3">
+            <small class="text-muted">Total Received</small>
+            <h3 class="mb-0 text-success">{{ money_text(total_received) }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3">
+            <small class="text-muted">Outstanding Balance</small>
+            <h3 class="mb-0 text-danger">{{ money_text(outstanding) }}</h3>
+        </div>
+    </div>
+</div>
+
+{% if current_role in ['admin', 'owner'] %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0">Record Customer Payment</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('add_payment') }}" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Invoice</label>
+                <select class="form-select" name="invoice_id" id="payment_invoice"
+                        required>
+                    <option value="">Select invoice</option>
+                    {% for invoice in invoices %}
+                        {% if invoice.balance_paise > 0 %}
+                        <option value="{{ invoice.id }}"
+                                data-balance="{{ invoice.balance_paise }}">
+                            {{ invoice.invoice_number }} — {{ invoice.customer_name }}
+                            — {{ money_text(invoice.balance_paise) }} due
+                        </option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Payment Date</label>
+                <input type="date" class="form-control" name="payment_date"
+                       value="{{ today }}" required>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Amount (₹)</label>
+                <input type="number" class="form-control" name="amount_rupees"
+                       min="0.01" step="0.01" required>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Payment Mode</label>
+                <select class="form-select" name="payment_mode" required>
+                    <option value="Cash">Cash</option>
+                    <option value="UPI">UPI</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                    <option value="Cheque">Cheque</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Reference</label>
+                <input type="text" class="form-control" name="reference"
+                       placeholder="Optional">
+            </div>
+
+            <div class="col-12">
+                <button class="btn btn-dark px-4" type="submit">
+                    Record Payment
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0">Customer Outstanding Summary</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th class="text-end">Invoiced</th>
+                        <th class="text-end">Received</th>
+                        <th class="text-end">Outstanding</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for customer in outstanding_customers %}
+                    <tr>
+                        <td class="fw-semibold">{{ customer.customer_name }}</td>
+                        <td class="text-end">{{ money_text(customer.total_paise) }}</td>
+                        <td class="text-end text-success">{{ money_text(customer.received_paise) }}</td>
+                        <td class="text-end fw-bold text-danger">{{ money_text(customer.balance_paise) }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4" class="text-center text-muted">No outstanding balances.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0">Invoice-wise Outstanding</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Invoice</th>
+                        <th>Customer</th>
+                        <th class="text-end">Balance Due</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for invoice in invoices %}
+                    <tr>
+                        <td>{{ invoice.invoice_number }}</td>
+                        <td>{{ invoice.customer_name }}</td>
+                        <td class="text-end {% if invoice.balance_paise > 0 %}text-danger fw-semibold{% else %}text-success{% endif %}">
+                            {{ money_text(invoice.balance_paise) }}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="3" class="text-center text-muted">No invoices found.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0">Payment History</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Invoice</th>
+                        <th>Customer</th>
+                        <th>Mode</th>
+                        <th>Reference</th>
+                        <th class="text-end">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for payment in payments %}
+                    <tr>
+                        <td>{{ payment.payment_date }}</td>
+                        <td>{{ payment.invoice_number }}</td>
+                        <td>{{ payment.customer_name }}</td>
+                        <td>{{ payment.payment_mode }}</td>
+                        <td>{{ payment.reference or '-' }}</td>
+                        <td class="text-end text-success fw-semibold">
+                            {{ money_text(payment.amount_paise) }}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" class="text-center text-muted">No payments recorded yet.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

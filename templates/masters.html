@@ -1,0 +1,222 @@
+
+{% extends "base.html" %}
+
+{% block title %}Masters | Order-to-Audit{% endblock %}
+{% block heading %}Master data{% endblock %}
+{% block subtitle %}Maintain products, customers, raw materials and production recipes.{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">Products</div>
+        <div class="stat-value">{{ products|length }}</div>
+        <div class="stat-foot">Product records</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Customers</div>
+        <div class="stat-value">{{ customers|length }}</div>
+        <div class="stat-foot">Customer records</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Raw materials</div>
+        <div class="stat-value">{{ materials|length }}</div>
+        <div class="stat-foot">Material records</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">BOMs</div>
+        <div class="stat-value">{{ boms|length }}</div>
+        <div class="stat-foot">Production recipes</div>
+    </div>
+</div>
+
+<ul class="nav nav-tabs custom-tabs mt-4" id="masterTabs" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#products" type="button">Products</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#customers" type="button">Customers</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#materials" type="button">Materials</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#bom" type="button">Bill of Materials</button></li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="products">
+        <div class="content-card tab-card">
+            <div class="form-section-title">Add product</div>
+            <form method="POST" action="{{ url_for('masters') }}">
+                <input type="hidden" name="action" value="product">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label">Product name</label>
+                        <input name="name" class="form-control" placeholder="e.g. Murukku 200g" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Selling price (₹)</label>
+                        <input name="price_paise" type="number" min="0" step="0.01" class="form-control" placeholder="50.00" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">HSN code</label>
+                        <input name="hsn" class="form-control" placeholder="1905">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">GST (bps)</label>
+                        <input name="gst_rate_bps" type="number" min="0" value="500" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-actions"><button class="btn btn-primary">Add product</button></div>
+            </form>
+        </div>
+
+        <div class="content-card">
+            <div class="card-heading"><h4>Product list</h4><span>{{ products|length }} records</span></div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>Product</th><th>HSN</th><th>Price</th><th>GST</th><th>Status</th></tr></thead>
+                    <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td class="fw-semibold">{{ product.name }}</td>
+                        <td>{{ product.hsn or '-' }}</td>
+                        <td>{{ money_text(product.selling_price_paise) }}</td>
+                        <td>{{ "%.2f"|format(product.gst_rate_bps / 100) }}%</td>
+                        <td><span class="status-pill status-approved">{{ 'Active' if product.active else 'Inactive' }}</span></td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="text-center text-muted py-4">No products added yet.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="customers">
+        <div class="content-card tab-card">
+            <div class="form-section-title">Add customer</div>
+            <form method="POST" action="{{ url_for('masters') }}">
+                <input type="hidden" name="action" value="customer">
+                <div class="row g-3">
+                    <div class="col-md-6"><label class="form-label">Customer name</label><input name="name" class="form-control" required></div>
+                    <div class="col-md-3"><label class="form-label">Phone</label><input name="phone" class="form-control"></div>
+                    <div class="col-md-3"><label class="form-label">State</label><input name="state" class="form-control" value="Tamil Nadu" required></div>
+                    <div class="col-md-6"><label class="form-label">GSTIN</label><input name="gstin" class="form-control"></div>
+                    <div class="col-md-6"><label class="form-label">Address</label><input name="address" class="form-control"></div>
+                </div>
+                <div class="form-actions"><button class="btn btn-primary">Add customer</button></div>
+            </form>
+        </div>
+        <div class="content-card">
+            <div class="card-heading"><h4>Customer list</h4><span>{{ customers|length }} records</span></div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>Name</th><th>Phone</th><th>State</th><th>GSTIN</th></tr></thead>
+                    <tbody>
+                    {% for customer in customers %}
+                    <tr><td class="fw-semibold">{{ customer.name }}</td><td>{{ customer.phone or '-' }}</td><td>{{ customer.state }}</td><td>{{ customer.gstin or '-' }}</td></tr>
+                    {% else %}
+                    <tr><td colspan="4" class="text-center text-muted py-4">No customers added yet.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="materials">
+        <div class="content-card tab-card">
+            <div class="form-section-title">Add raw material</div>
+            <form method="POST" action="{{ url_for('masters') }}">
+                <input type="hidden" name="action" value="material">
+                <div class="row g-3">
+                    <div class="col-md-6"><label class="form-label">Material name</label><input name="name" class="form-control" placeholder="e.g. Flour" required></div>
+                    <div class="col-md-3">
+                        <label class="form-label">Unit</label>
+                        <select name="unit" class="form-select" required>
+                            <option value="kg">Kilogram (kg)</option>
+                            <option value="g">Gram (g)</option>
+                            <option value="litre">Litre</option>
+                            <option value="piece">Piece</option>
+                            <option value="packet">Packet</option>
+                            <option value="carton">Carton</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3"><label class="form-label">HSN code</label><input name="hsn" class="form-control"></div>
+                </div>
+                <div class="form-actions"><button class="btn btn-primary">Add material</button></div>
+            </form>
+        </div>
+        <div class="content-card">
+            <div class="card-heading"><h4>Raw material list</h4><span>{{ materials|length }} records</span></div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>Material</th><th>Unit</th><th>HSN</th></tr></thead>
+                    <tbody>
+                    {% for material in materials %}
+                    <tr><td class="fw-semibold">{{ material.name }}</td><td>{{ material.unit }}</td><td>{{ material.hsn or '-' }}</td></tr>
+                    {% else %}
+                    <tr><td colspan="3" class="text-center text-muted py-4">No materials added yet.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="bom">
+        <div class="content-card tab-card">
+            <div class="form-section-title">Create Bill of Materials</div>
+            <p class="form-help">Enter one material per line using the format material_id=quantity. You can find each material ID in the database material records.</p>
+            <form method="POST" action="{{ url_for('masters') }}">
+                <input type="hidden" name="action" value="bom">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Product</label>
+                        <select name="product_id" class="form-select" required>
+                            <option value="">Select product</option>
+                            {% for product in products %}
+                            <option value="{{ product.id }}">{{ product.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Batch name</label>
+                        <input name="batch_name" class="form-control" placeholder="Standard 200 packet batch" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Batch size (packets)</label>
+                        <input name="batch_size" type="number" min="1" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Expected yield (packets)</label>
+                        <input name="expected_yield" type="number" min="1" class="form-control" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Material IDs and quantities</label>
+                        <textarea name="bom_lines" rows="5" class="form-control" placeholder="1=40&#10;2=10&#10;3=1.2&#10;4=200&#10;5=10" required></textarea>
+                        <small class="form-help">Example: 1=40 means material ID 1 is required in a quantity of 40.</small>
+                    </div>
+                </div>
+                <div class="form-actions"><button class="btn btn-primary">Save BOM</button></div>
+            </form>
+        </div>
+        <div class="content-card">
+            <div class="card-heading"><h4>Existing BOMs</h4><span>{{ boms|length }} records</span></div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>Product</th><th>Batch name</th><th>Batch size</th><th>Expected yield</th><th>Status</th></tr></thead>
+                    <tbody>
+                    {% for bom in boms %}
+                    <tr>
+                        <td class="fw-semibold">{{ bom.product_name }}</td>
+                        <td>{{ bom.batch_name }}</td>
+                        <td>{{ bom.batch_size_packets }}</td>
+                        <td>{{ bom.expected_yield_packets }}</td>
+                        <td><span class="status-pill status-approved">{{ 'Active' if bom.active else 'Inactive' }}</span></td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="text-center text-muted py-4">No BOMs created yet.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

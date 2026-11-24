@@ -1,0 +1,66 @@
+
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">Credit Notes</h2>
+            <p class="text-muted mb-0">Manage invoice cancellations and sales returns.</p>
+        </div>
+        <a href="{{ url_for('orders') }}" class="btn btn-outline-secondary">
+            View Orders
+        </a>
+    </div>
+
+    <div class="alert alert-info">
+        <strong>Audit rule:</strong> Posted invoices must never be deleted.
+        Use a credit note to record a cancellation or return.
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <h5 class="fw-bold mb-3">Credit Note Register</h5>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Credit Note No.</th>
+                            <th>Original Invoice</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Reason</th>
+                            <th class="text-end">Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for note in credit_notes %}
+                        <tr>
+                            <td class="fw-semibold">{{ note.credit_note_number }}</td>
+                            <td>{{ note.invoice_number }}</td>
+                            <td>{{ note.customer_name }}</td>
+                            <td>{{ note.credit_date }}</td>
+                            <td>{{ note.reason }}</td>
+                            <td class="text-end">
+                                ₹{{ "%.2f"|format(note.total_paise / 100) }}
+                            </td>
+                            <td><span class="badge bg-secondary">Recorded</span></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                No credit notes have been recorded.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
